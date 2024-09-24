@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 const ClickCounter = ({title, message, messageMouse}) => {
 
-    const [count, setCount] = useState(0);
+    const [count, setCount] = useState(JSON.parse(localStorage.getItem("count")));
     const [showMessage, setShowMessage] = useState(false);
 
     return (
@@ -11,7 +11,11 @@ const ClickCounter = ({title, message, messageMouse}) => {
             {title}
         </p>
         {showMessage && <p>{messageMouse}</p>}
-        <button onClick={() => setCount((count) => count + 1)} 
+        <button onClick={() => {
+          setCount((count) => count + 1);
+          localStorage.setItem("count",JSON.stringify(count))
+
+        }} 
         onMouseEnter={() => setShowMessage(true)} 
         onMouseLeave={() => setShowMessage(false)}>
           count is {count}

@@ -1,11 +1,9 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
+import reactLogo from '../../assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
-import ClickCounter from './clickCounter'
+import ClickCounter from '../ClickCounter/clickCounter'
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <>
