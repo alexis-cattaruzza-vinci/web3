@@ -1,12 +1,20 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Statistics from '../Stats/Statistics';
 import Button from '../Button/Button';
+import Loading from '../Loading/Loading';
 
 const App = () => {
   // save clicks of each button to its own state
   const [good, setGood] = useState(0)
   const [neutral, setNeutral] = useState(0)
   const [bad, setBad] = useState(0)
+  const [selected, setSelected] = useState(0)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 3000); // 3 secondes
+    return () => clearTimeout(timer); // Nettoyer le timeout si le composant est démonté
+  }, []);
 
   const handleGoodClick = () => setGood(good + 1);
   const handleNeutralClick = () => setNeutral(neutral + 1);
@@ -29,12 +37,16 @@ const App = () => {
     'The only way to go fast, is to go well.'
   ]
    
-  const [selected, setSelected] = useState(0)
+  
 
   const handleRandomSelection = () => {
     const randomNumber = Math.floor(Math.random() * 6); // Generates a random number between 0 and 8
     setSelected(randomNumber); // Set the selected state to the random number
   };
+
+  if(loading){
+    return <Loading />
+  }
 
   return (
     <div>
