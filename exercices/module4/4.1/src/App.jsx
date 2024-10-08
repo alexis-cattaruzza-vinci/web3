@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { fetchPersons, addPerson} from './services/persons';
 
 const App = () => {
   const [persons, setPersons] = useState([]);
@@ -8,15 +8,18 @@ const App = () => {
 
   // Fetch data from the server when the component mounts
   useEffect(() => {
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        setPersons(response.data); // Set the fetched data as initial state
-      })
-      .catch(error => {
-        console.error('Error fetching data:', error);
-      });
-  }, []); // Empty dependency array means this runs once when the component mounts
+    const getPersons = async () => {
+      try {
+        const fetchedPersons = await fetchPersons();
+        setPersons(fetchedPersons);
+      } catch (error) {
+        // Handle any error that may occur during fetching
+        console.error('Error fetching persons:', error);
+      }
+    };
+
+    getPersons();
+  }, []);
 
   const handleInputChange = (event) => {
     setNewName(event.target.value);
@@ -26,7 +29,7 @@ const App = () => {
     setNumber(event.target.value);
   };
 
-  const handleFormSubmit = (event) => {
+  const handleFormSubmit = async (event) => {
     event.preventDefault();
     
     const nameExists = persons.some(person => person.name.toLowerCase() === newName.toLowerCase());
@@ -36,17 +39,15 @@ const App = () => {
     } else if (newName && number) {
       const newPerson = { name: newName, number: number };
 
-      // Add the new person to the server
-      axios
-        .post('http://localhost:3001/persons', newPerson)
-        .then(response => {
-          setPersons(persons.concat(response.data)); // Update state with new person
-          setNewName(''); // Reset the input fields
-          setNumber('');
-        })
-        .catch(error => {
-          console.error('Error adding person:', error);
-        });
+      try{
+        const addedPerson = await addPerson(newPerson);
+        setPersons(persons.concat(addedPerson));
+        setNewName('');
+        setNumber('');
+      }catch (error) {
+        console.error('Error adding person:', error);
+        alert('Failed to add person. Please try again.')
+      }
     }
   };
 
@@ -55,13 +56,13 @@ const App = () => {
       <h2>Phonebook</h2>
       <form onSubmit={handleFormSubmit}>
         <div>
-          name: <input value={newName} onChange={handleInputChange} />
+          Name : <input value={newName} onChange={handleInputChange} />
         </div>
         <div>
-          number: <input value={number} onChange={handleNumber} />
+          Number : <input value={number} onChange={handleNumber} />
         </div>
         <div>
-          <button type="submit">add</button>
+          <button type="submit">Add</button>
         </div>
       </form>
       <h2>Numbers</h2>
