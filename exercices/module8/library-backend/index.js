@@ -1,140 +1,105 @@
-const { ApolloServer } = require('@apollo/server');
-const { startStandaloneServer } = require('@apollo/server/standalone');
-
-// Sample books data
-const books = [
-  { 
-    title: 'Clean Code', 
-    author: 'Robert Martin', 
-    published: 2008, 
-    genres: ['Programming', 'Software Engineering', 'Refactoring']
-  },
-  { 
-    title: 'Refactoring, edition 2', 
-    author: 'Martin Fowler', 
-    published: 2018, 
-    genres: ['Programming', 'Refactoring']
-  },
-  { 
-    title: 'Refactoring to Patterns', 
-    author: 'Joshua Kerievsky', 
-    published: 2004, 
-    genres: ['Programming', 'Refactoring']
-  },
-  { 
-    title: 'Practical Object-Oriented Design, An Agile Primer Using Ruby', 
-    author: 'Sandi Metz', 
-    published: 2012, 
-    genres: ['Programming', 'Refactoring']
-  },
-  { 
-    title: 'Harry Potter and the Sorcerer\'s Stone', 
-    author: 'J.K. Rowling', 
-    published: 1997, 
-    genres: ['Fantasy', 'Adventure']
-  },
-  { 
-    title: 'Jurassic Park', 
-    author: 'Michael Crichton', 
-    published: 1990, 
-    genres: ['Science Fiction', 'Thriller']
-  },
-  { 
-    title: 'The Hobbit', 
-    author: 'J.R.R. Tolkien', 
-    published: 1937, 
-    genres: ['Fantasy', 'Adventure']
-  },
-  { 
-    title: '1984', 
-    author: 'George Orwell', 
-    published: 1949, 
-    genres: ['Dystopian', 'Political Fiction']
-  },
-  { 
-    title: 'The Great Gatsby', 
-    author: 'F. Scott Fitzgerald', 
-    published: 1925, 
-    genres: ['Novel', 'Historical']
-  },
-  { 
-    title: 'Moby Dick', 
-    author: 'Herman Melville', 
-    published: 1851, 
-    genres: ['Adventure', 'Classic']
-  },
-  { 
-    title: 'Pride and Prejudice', 
-    author: 'Jane Austen', 
-    published: 1813, 
-    genres: ['Romance', 'Classic']
-  }
-];
-
-const typeDefs = `
-  type Book {
-    title: String!
-    author: String!
-    published: Int!
-    genres: [String!]!
-  }
-
-  type Author {
-    name: String!
-    bookCount: Int!
-  }
-
-  type Query {
-    bookCount: Int!
-    authorCount: Int!
-    allBooks(author: String, genre: String): [Book!]!
-    allAuthors: [Author!]!
-  }
-`;
-
-const resolvers = {
-  Query: {
-    bookCount: () => books.length,
-    authorCount: () => new Set(books.map(book => book.author)).size,
-    allBooks: (root, args) => {
-      let filteredBooks = books;
-      
-      // Filter by author if provided
-      if (args.author) {
-        filteredBooks = filteredBooks.filter(book => book.author === args.author);
-      }
-
-      // Filter by genre if provided
-      if (args.genre) {
-        filteredBooks = filteredBooks.filter(book => book.genres.includes(args.genre));
-      }
-
-      return filteredBooks;
+// Sample data for books and authors (initial state)
+let books = [
+    { title: 'Clean Code', author: 'Robert Martin', published: 2008, genres: ['Programming', 'Software Engineering', 'Refactoring'] },
+    { title: 'Refactoring, edition 2', author: 'Martin Fowler', published: 2018, genres: ['Programming', 'Refactoring'] },
+    { title: 'Refactoring to Patterns', author: 'Joshua Kerievsky', published: 2004, genres: ['Programming', 'Refactoring'] },
+    { title: 'Practical Object-Oriented Design', author: 'Sandi Metz', published: 2012, genres: ['Programming', 'Refactoring'] },
+    { title: 'Harry Potter', author: 'J.K. Rowling', published: 1997, genres: ['Fantasy', 'Adventure'] }
+  ];
+  
+  // Initial authors data (only storing names and book counts)
+  let authors = [
+    { name: 'Robert Martin', bookCount: 2 },
+    { name: 'Martin Fowler', bookCount: 1 },
+    { name: 'Joshua Kerievsky', bookCount: 1 },
+    { name: 'Sandi Metz', bookCount: 1 },
+    { name: 'J.K. Rowling', bookCount: 1 }
+  ];
+  
+  // Define the GraphQL schema
+  const typeDefs = `
+    type Book {
+      title: String!
+      author: String!
+      published: Int!
+      genres: [String!]!
+    }
+  
+    type Author {
+      name: String!
+      bookCount: Int!
+    }
+  
+    type Query {
+      allBooks(author: String, genre: String): [Book!]!
+      allAuthors: [Author!]!
+    }
+  
+    type Mutation {
+      addBook(
+        title: String!,
+        author: String!,
+        published: Int!,
+        genres: [String!]!
+      ): Book!
+    }
+  `;
+  
+  // Resolvers
+  const resolvers = {
+    Query: {
+      allBooks: (root, args) => {
+        let filteredBooks = books;
+        
+        if (args.author) {
+          filteredBooks = filteredBooks.filter(book => book.author === args.author);
+        }
+  
+        if (args.genre) {
+          filteredBooks = filteredBooks.filter(book => book.genres.includes(args.genre));
+        }
+  
+        return filteredBooks;
+      },
+      allAuthors: () => authors
     },
-    allAuthors: () => {
-      const authors = [];
-      books.forEach(book => {
-        const existingAuthor = authors.find(author => author.name === book.author);
+    Mutation: {
+      addBook: (root, args) => {
+        const { title, author, published, genres } = args;
+  
+        // Check if the author already exists
+        const existingAuthor = authors.find(a => a.name === author);
+        
         if (existingAuthor) {
+          // Increment book count for the existing author
           existingAuthor.bookCount++;
         } else {
-          authors.push({ name: book.author, bookCount: 1 });
+          // If the author doesn't exist, add them to authors array
+          authors.push({ name: author, bookCount: 1 });
         }
-      });
-      return authors;
+  
+        // Add the new book to the list
+        const newBook = { title, author, published, genres };
+        books.push(newBook);
+        
+        return newBook;
+      }
     }
-  }
-};
-
-// Create an instance of ApolloServer
-const server = new ApolloServer({
-  typeDefs,
-  resolvers
-});
-
-// Start the standalone server
-startStandaloneServer(server, {
-  listen: { port: 4000 }
-}).then(({ url }) => {
-  console.log(`🚀 Server ready at ${url}`);
-});
+  };
+  
+  // Create an ApolloServer instance
+  const { ApolloServer } = require('@apollo/server');
+  const { startStandaloneServer } = require('@apollo/server/standalone');
+  
+  const server = new ApolloServer({
+    typeDefs,
+    resolvers
+  });
+  
+  // Start the server
+  startStandaloneServer(server, {
+    listen: { port: 4000 }
+  }).then(({ url }) => {
+    console.log(`🚀 Server ready at ${url}`);
+  });
+  
