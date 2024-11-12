@@ -7,13 +7,25 @@ const books = [
     title: 'Clean Code', 
     author: 'Robert Martin', 
     published: 2008, 
-    genres: ['Programming', 'Software Engineering']
+    genres: ['Programming', 'Software Engineering', 'Refactoring']
   },
   { 
-    title: 'Agile Software Development', 
-    author: 'Robert Martin', 
-    published: 2002, 
-    genres: ['Programming', 'Software Engineering']
+    title: 'Refactoring, edition 2', 
+    author: 'Martin Fowler', 
+    published: 2018, 
+    genres: ['Programming', 'Refactoring']
+  },
+  { 
+    title: 'Refactoring to Patterns', 
+    author: 'Joshua Kerievsky', 
+    published: 2004, 
+    genres: ['Programming', 'Refactoring']
+  },
+  { 
+    title: 'Practical Object-Oriented Design, An Agile Primer Using Ruby', 
+    author: 'Sandi Metz', 
+    published: 2012, 
+    genres: ['Programming', 'Refactoring']
   },
   { 
     title: 'Harry Potter and the Sorcerer\'s Stone', 
@@ -75,7 +87,7 @@ const typeDefs = `
   type Query {
     bookCount: Int!
     authorCount: Int!
-    allBooks(author: String): [Book!]!
+    allBooks(author: String, genre: String): [Book!]!
     allAuthors: [Author!]!
   }
 `;
@@ -85,12 +97,19 @@ const resolvers = {
     bookCount: () => books.length,
     authorCount: () => new Set(books.map(book => book.author)).size,
     allBooks: (root, args) => {
+      let filteredBooks = books;
+      
+      // Filter by author if provided
       if (args.author) {
-        // Filter books by the provided author
-        return books.filter(book => book.author === args.author);
+        filteredBooks = filteredBooks.filter(book => book.author === args.author);
       }
-      // Return all books if no author is provided
-      return books;
+
+      // Filter by genre if provided
+      if (args.genre) {
+        filteredBooks = filteredBooks.filter(book => book.genres.includes(args.genre));
+      }
+
+      return filteredBooks;
     },
     allAuthors: () => {
       const authors = [];
