@@ -67,10 +67,16 @@ const typeDefs = `
     genres: [String!]!
   }
 
+  type Author {
+    name: String!
+    bookCount: Int!
+  }
+
   type Query {
     bookCount: Int!
     authorCount: Int!
     allBooks: [Book!]!
+    allAuthors: [Author!]!
   }
 `;
 
@@ -80,7 +86,23 @@ const resolvers = {
   Query: {
     bookCount: () => books.length,
     authorCount: () => new Set(authors).size,
-    allBooks:() =>books
+    allBooks:() => books,
+    allAuthors: () => {
+        // Create an array of unique authors with book count
+        const authors = [];
+        
+        // Group books by author and count them
+        books.forEach(book => {
+          const existingAuthor = authors.find(author => author.name === book.author);
+          if (existingAuthor) {
+            existingAuthor.bookCount++;
+          } else {
+            authors.push({ name: book.author, bookCount: 1 });
+          }
+        });
+  
+        return authors;
+      }
   }
 };
 
