@@ -3,14 +3,50 @@ const { startStandaloneServer } = require('@apollo/server/standalone');
 
 // Sample data
 const books = [
-  { title: 'Harry Potter and the Sorcerer\'s Stone', author: 'J.K. Rowling' },
-  { title: 'Jurassic Park', author: 'Michael Crichton' },
-  { title: 'The Hobbit', author: 'J.R.R. Tolkien' },
-  { title: '1984', author: 'George Orwell' },
-  { title: 'The Great Gatsby', author: 'F. Scott Fitzgerald' },
-  { title: 'Moby Dick', author: 'Herman Melville' },
-  { title: 'Pride and Prejudice', author: 'Jane Austen' }
-];
+    { 
+      title: 'Harry Potter and the Sorcerer\'s Stone', 
+      author: 'J.K. Rowling', 
+      published: 1997, 
+      genres: ['Fantasy', 'Adventure']
+    },
+    { 
+      title: 'Jurassic Park', 
+      author: 'Michael Crichton', 
+      published: 1990, 
+      genres: ['Science Fiction', 'Thriller']
+    },
+    { 
+      title: 'The Hobbit', 
+      author: 'J.R.R. Tolkien', 
+      published: 1937, 
+      genres: ['Fantasy', 'Adventure']
+    },
+    { 
+      title: '1984', 
+      author: 'George Orwell', 
+      published: 1949, 
+      genres: ['Dystopian', 'Political Fiction']
+    },
+    { 
+      title: 'The Great Gatsby', 
+      author: 'F. Scott Fitzgerald', 
+      published: 1925, 
+      genres: ['Novel', 'Historical']
+    },
+    { 
+      title: 'Moby Dick', 
+      author: 'Herman Melville', 
+      published: 1851, 
+      genres: ['Adventure', 'Classic']
+    },
+    { 
+      title: 'Pride and Prejudice', 
+      author: 'Jane Austen', 
+      published: 1813, 
+      genres: ['Romance', 'Classic']
+    }
+  ];
+  
 
 const authors = [
   'J.K. Rowling',
@@ -24,17 +60,27 @@ const authors = [
 
 // Define the GraphQL schema
 const typeDefs = `
+  type Book {
+    title: String!
+    author: String!
+    published: Int!
+    genres: [String!]!
+  }
+
   type Query {
     bookCount: Int!
     authorCount: Int!
+    allBooks: [Book!]!
   }
 `;
+
 
 // Define the resolvers
 const resolvers = {
   Query: {
     bookCount: () => books.length,
-    authorCount: () => new Set(authors).size
+    authorCount: () => new Set(authors).size,
+    allBooks:() =>books
   }
 };
 
