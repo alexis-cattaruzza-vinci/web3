@@ -9,11 +9,12 @@ let books = [
   
   // Initial authors data (only storing names and book counts)
   let authors = [
-    { name: 'Robert Martin', bookCount: 2 },
-    { name: 'Martin Fowler', bookCount: 1 },
-    { name: 'Joshua Kerievsky', bookCount: 1 },
-    { name: 'Sandi Metz', bookCount: 1 },
-    { name: 'J.K. Rowling', bookCount: 1 }
+    { name: 'Robert Martin', bookCount: 2, born: null },
+    { name: 'Martin Fowler', bookCount: 1, born: null },
+    { name: 'Joshua Kerievsky', bookCount: 1, born: null },
+    { name: 'Sandi Metz', bookCount: 1, born: null },
+    { name: 'J.K. Rowling', bookCount: 1, born: null },
+    { name: 'Reijo Mäki', bookCount: 1, born: null }
   ];
   
   // Define the GraphQL schema
@@ -28,6 +29,7 @@ let books = [
     type Author {
       name: String!
       bookCount: Int!
+      born: Int
     }
   
     type Query {
@@ -42,6 +44,10 @@ let books = [
         published: Int!,
         genres: [String!]!
       ): Book!
+      editAuthor(
+        name: String!,
+        setBornTo: Int!
+      ): Author
     }
   `;
   
@@ -83,6 +89,23 @@ let books = [
         books.push(newBook);
         
         return newBook;
+      },
+      editAuthor: (root, args) => {
+        const { name, setBornTo } = args;
+  
+        // Find the author by name
+        const author = authors.find(a => a.name === name);
+  
+        if (!author) {
+          // If author is not found, return null
+          return null;
+        }
+  
+        // Update the author's birth year
+        author.born = setBornTo;
+        
+        // Return the updated author
+        return author;
       }
     }
   };
